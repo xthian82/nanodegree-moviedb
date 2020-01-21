@@ -28,7 +28,7 @@ class MovieDetailViewController: UIViewController {
         super.viewDidLoad()
         
         navigationItem.title = movie.title
-        imageView.image = UIImage(named: self.movie.posterPath ?? "")
+        imageView.image = UIImage(named: "PosterPlaceholder")
         
         toggleBarButton(watchlistBarButtonItem, enabled: isWatchlist)
         toggleBarButton(favoriteBarButtonItem, enabled: isFavorite)
