@@ -28,6 +28,7 @@ class MovieDetailViewController: UIViewController {
         super.viewDidLoad()
         
         navigationItem.title = movie.title
+        imageView.image = UIImage(named: self.movie.posterPath ?? "")
         
         toggleBarButton(watchlistBarButtonItem, enabled: isWatchlist)
         toggleBarButton(favoriteBarButtonItem, enabled: isFavorite)
@@ -35,11 +36,34 @@ class MovieDetailViewController: UIViewController {
     }
     
     @IBAction func watchlistButtonTapped(_ sender: UIBarButtonItem) {
-        
+        TMDBClient.markWatchlist(movieId: movie.id, watchlist: !isWatchlist, completion: self.handleWatchlistResponse(success:error:))
     }
     
     @IBAction func favoriteButtonTapped(_ sender: UIBarButtonItem) {
+        TMDBClient.markFavorite(movieId: movie.id, favorite: !self.isFavorite, completion: self.handleFavoritelistResponse(success:error:))
 
+    }
+    
+    func handleWatchlistResponse(success: Bool, error: Error?) {
+        if success {
+            if isWatchlist {
+                MovieModel.watchlist = MovieModel.watchlist.filter() { $0 != self.movie }
+            } else {
+                MovieModel.watchlist.append(self.movie)
+            }
+            toggleBarButton(watchlistBarButtonItem, enabled: isWatchlist)
+        }
+    }
+    
+    func handleFavoritelistResponse(success: Bool, error: Error?) {
+        if success {
+            if isFavorite {
+                MovieModel.favorites = MovieModel.favorites.filter() { $0 != self.movie }
+            } else {
+                MovieModel.favorites.append(self.movie)
+            }
+            toggleBarButton(favoriteBarButtonItem, enabled: isFavorite)
+        }
     }
     
     func toggleBarButton(_ button: UIBarButtonItem, enabled: Bool) {
