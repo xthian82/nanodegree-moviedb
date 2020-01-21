@@ -130,10 +130,14 @@ class TMDBClient {
     class func downloadPosterImage(posterPath: String, completionHandler: @escaping (Data?, Error?) -> Void) {
         let task = URLSession.shared.dataTask(with: Endpoints.postImageURL(posterPath: posterPath).url, completionHandler: {(data, response, error) in
             guard let data = data else {
-                completionHandler(nil, error)
+                DispatchQueue.main.async {
+                    completionHandler(nil, error)
+                }
                 return
             }
-            completionHandler(data, nil)
+            DispatchQueue.main.async {
+                completionHandler(data, nil)
+            }
         })
         task.resume()
     }
