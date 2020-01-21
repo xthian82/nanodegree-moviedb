@@ -32,6 +32,7 @@ class TMDBClient {
         case search(query: String)
         case markWatchlist
         case markFavorite
+        case postImageURL(posterPath: String)
         
         var stringValue: String {
             switch self {
@@ -55,6 +56,8 @@ class TMDBClient {
                 return Endpoints.base + "/account/\(Auth.accountId)/watchlist" + Endpoints.apiKeyParam + "&session_id=\(Auth.sessionId)"
             case .markFavorite:
                 return Endpoints.base + "/account/\(Auth.accountId)/favorite" + Endpoints.apiKeyParam + "&session_id=\(Auth.sessionId)"
+            case .postImageURL(let postPath):
+                return "https://image.tmdb.org/t/p/w500/\(postPath ?? "")"
             }
         }
         
@@ -114,7 +117,7 @@ class TMDBClient {
     
     class func markFavorite(movieId: Int, favorite: Bool, completion: @escaping(Bool, Error?) -> Void) {
         let body = MarkFavorite(mediaType: "movie", mediaId: movieId, favorite: favorite)
-        taskForPOSTRequest(url: Endpoints.markWatchlist.url, responseType: TMDBResponse.self, body: body) {
+        taskForPOSTRequest(url: Endpoints.markFavorite.url, responseType: TMDBResponse.self, body: body) {
             (response, error) in
             if let response = response {
                 completion(response.statusCode == 1 || response.statusCode == 12 || response.statusCode == 13, nil)
@@ -122,6 +125,17 @@ class TMDBClient {
                 completion(false, error)
             }
         }
+    }
+    
+    class func downloadPosterImage(posterPath: String, completionHandler: @escaping (Data?, Error?) -> Void) {
+        let task = URLSession.shared.dataTask(with: Endpoints.postImageURL(posterPath: posterPath).url, completionHandler: {(data, response, error) in
+            guard let data = data else {
+                completionHandler(nil, error)
+                return
+            }
+            completionHandler(data, nil)
+        })
+        task.resume()
     }
     
     class func logout(completion: @escaping(Error?) -> Void) {

@@ -33,6 +33,18 @@ class MovieDetailViewController: UIViewController {
         toggleBarButton(watchlistBarButtonItem, enabled: isWatchlist)
         toggleBarButton(favoriteBarButtonItem, enabled: isFavorite)
         
+        TMDBClient.downloadPosterImage(posterPath: self.movie.posterPath!) {
+            (data, error) in
+            if let data = data {
+                DispatchQueue.main.async {
+                    self.imageView.image = UIImage(data: data)
+                }
+                
+            } else {
+                print("error leyendo imagen")
+            }
+        }
+        
     }
     
     @IBAction func watchlistButtonTapped(_ sender: UIBarButtonItem) {
