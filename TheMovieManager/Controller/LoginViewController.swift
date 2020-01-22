@@ -4,6 +4,7 @@
 //
 //  Created by Owen LaRosa on 8/13/18.
 //  Copyright © 2018 Udacity. All rights reserved.
+//  Maintainer @xthian82
 //
 
 import UIKit
@@ -34,7 +35,6 @@ class LoginViewController: UIViewController {
             if success {
                 UIApplication.shared.open(TMDBClient.Endpoints.webAuth.url, options: [:], completionHandler: nil)
             }
-        
         }
     }
     
@@ -44,7 +44,7 @@ class LoginViewController: UIViewController {
                                  password: self.passwordTextField.text ?? "",
                                  completion: self.handleLoginResponse(success:error:))
         } else {
-            print("Error on getting request token : ", error)
+            showLoginFailure(message: error?.localizedDescription ?? "")
         }
     }
     
@@ -61,7 +61,7 @@ class LoginViewController: UIViewController {
         if success {
             self.performSegue(withIdentifier: "completeLogin", sender: nil)
         } else {
-            print("couldn't create session : ", error)
+            showLoginFailure(message: error?.localizedDescription ?? "")
         }
     }
     
@@ -81,5 +81,6 @@ class LoginViewController: UIViewController {
         let alertVC = UIAlertController(title: "Login Failed", message: message, preferredStyle: .alert)
         alertVC.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
         show(alertVC, sender: nil)
+        setLoggingIn(false)
     }
 }
