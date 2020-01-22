@@ -173,14 +173,15 @@ class TMDBClient {
         }
     }
     
-    class func searchMovie(query: String, completion: @escaping ([Movie], Error?) -> Void) {
-        taskForGETRequest(url: Endpoints.search(query: query).url, responseType: MovieResults.self) { (response, error) in
+    class func searchMovie(query: String, completion: @escaping ([Movie], Error?) -> Void) -> URLSessionTask {
+        let task = taskForGETRequest(url: Endpoints.search(query: query).url, responseType: MovieResults.self) { (response, error) in
             guard let responseObject = response else {
                 completion([], error)
                 return
             }
             completion(responseObject.results, nil)
         }
+        return task
     }
     
     class func getFavorites(completion: @escaping ([Movie], Error?) -> Void) {
@@ -193,8 +194,8 @@ class TMDBClient {
         }
     }
     
-    class func taskForGETRequest<ResponseType: Decodable>(url: URL, responseType: ResponseType.Type,
-                                                          completion: @escaping (ResponseType?, Error?) -> Void) {
+    @discardableResult class func taskForGETRequest<ResponseType: Decodable>(url: URL, responseType: ResponseType.Type,
+                                                          completion: @escaping (ResponseType?, Error?) -> Void) -> URLSessionTask {
         let task = URLSession.shared.dataTask(with: url) { data, response, error in
             guard let data = data else {
                 DispatchQueue.main.async {
@@ -209,13 +210,20 @@ class TMDBClient {
                     completion(responseObject, nil)
                 }
             } catch {
-                DispatchQueue.main.async {
-                    completion(nil, error)
+                do {
+                    let errorResponse = try decoder.decode(TMDBResponse.self, from: data)
+                    DispatchQueue.main.async {
+                        completion(nil, errorResponse)
+                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        completion(nil, error)
+                    }
                 }
             }
         }
         task.resume()
-        
+        return task
     }
 
     class func taskForPOSTRequest<RequestType: Encodable, ResponseType: Decodable>(url: URL, responseType: ResponseType.Type, body: RequestType,

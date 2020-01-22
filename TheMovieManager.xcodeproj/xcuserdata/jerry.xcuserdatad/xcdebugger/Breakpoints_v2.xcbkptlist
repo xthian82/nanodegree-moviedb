@@ -48,7 +48,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "173"
             endingLineNumber = "173"
-            landmarkName = "searchMovie(query:completion:)"
+            landmarkName = "getWatchlist(completion:)"
             landmarkType = "7">
             <Locations>
                <Location

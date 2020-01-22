@@ -14,6 +14,7 @@ class LoginViewController: UIViewController {
     @IBOutlet weak var passwordTextField: UITextField!
     @IBOutlet weak var loginButton: UIButton!
     @IBOutlet weak var loginViaWebsiteButton: UIButton!
+    @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -23,10 +24,12 @@ class LoginViewController: UIViewController {
     }
     
     @IBAction func loginTapped(_ sender: UIButton) {
+        setLoggingIn(true)
         TMDBClient.getRequestToken(completion: handleRequestTokenResponse(success:error:))
     }
     
     @IBAction func loginViaWebsiteTapped() {
+        setLoggingIn(true)
         TMDBClient.getRequestToken { (success, error) in
             if success {
                 UIApplication.shared.open(TMDBClient.Endpoints.webAuth.url, options: [:], completionHandler: nil)
@@ -49,15 +52,34 @@ class LoginViewController: UIViewController {
         if success {
             TMDBClient.getNewSession(completion: self.handleSessionResponse(success:error:))
         } else {
-            print("Error on login : ", error)
+            showLoginFailure(message: error?.localizedDescription ?? "")
         }
     }
     
     func handleSessionResponse(success: Bool, error: Error?) {
+        setLoggingIn(false)
         if success {
             self.performSegue(withIdentifier: "completeLogin", sender: nil)
         } else {
             print("couldn't create session : ", error)
         }
+    }
+    
+    func setLoggingIn(_ loggingIn: Bool) {
+        if loggingIn {
+            activityIndicator.startAnimating()
+        } else {
+            activityIndicator.stopAnimating()
+        }
+        self.emailTextField.isEnabled = !loggingIn
+        self.passwordTextField.isEnabled = !loggingIn
+        self.loginButton.isEnabled = !loggingIn
+        self.loginViaWebsiteButton.isEnabled = !loggingIn
+    }
+    
+    func showLoginFailure(message: String) {
+        let alertVC = UIAlertController(title: "Login Failed", message: message, preferredStyle: .alert)
+        alertVC.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        show(alertVC, sender: nil)
     }
 }
